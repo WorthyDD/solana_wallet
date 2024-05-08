@@ -1,0 +1,8 @@
+framework module "Spider" {
+	header "ref.h"
+    header "Spider.objc.h"
+    header "Universe.objc.h"
+    header "Spider.h"
+
+    export *
+}

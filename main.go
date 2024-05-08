@@ -34,13 +34,17 @@ func hello() {
 func combinePublicKey(pubkeys []string) []byte {
 
 	// 解码 Base64 编码的公钥
-	pubKey1Bytes, _ := base64.StdEncoding.DecodeString(pubkeys[0])
-	pubKey2Bytes, _ := base64.StdEncoding.DecodeString(pubkeys[1])
-	pubKey3Bytes, _ := base64.StdEncoding.DecodeString(pubkeys[2])
+	var pubKeyBytes []byte
+	for _, pubkey := range pubkeys {
+		b, _ := base64.StdEncoding.DecodeString(pubkey)
+		if pubKeyBytes == nil {
+			pubKeyBytes = b
+		} else {
+			pubKeyBytes = append(pubKeyBytes, b...)
+		}
+	}
 
-	// 连接三个公钥的字节序列
-	combinedBytes := append(pubKey1Bytes, pubKey2Bytes...)
-	combinedBytes = append(combinedBytes, pubKey3Bytes...)
+	combinedBytes := pubKeyBytes[:32]
 
 	// 计算 SHA-256 哈希值
 	hash := sha256.Sum256(combinedBytes)
@@ -156,6 +160,17 @@ func createWallet() {
 	pubkey := combinePublicKey(keys)
 
 	pk := ed25519.PublicKey(pubkey)
+
+	fmt.Printf("pubkey: %v\n", pk)
+
+	//var gkey = "sEkdzxZtXjsLM/lII7SL3Xk024XqtBiWhXbD1gZ+KwU="
+	newWalletV2(pk)
+}
+
+func createWalletWithSeed(seed string) {
+	pubkey := combinePublicKey([]string{seed})
+
+	pk := ed25519.PublicKey(pubkey[:32])
 
 	fmt.Printf("pubkey: %v\n", pk)
 
@@ -304,6 +319,8 @@ func main() {
 
 	//ethBalanceDetect()
 
-	add := ethWalletDemo("shock napkin banana sister giraffe memory hill father yellow spot rubber able")
-	fetchEthBalance(add)
+	//add := ethWalletDemo("shock napkin banana sister giraffe memory hill father yellow spot rubber able")
+	//fetchEthBalance(add)
+
+	createWalletWithSeed("2CDMXcResydfmiDvhonRMrDLLkUkYtuY96L+sG9mJht7i5wZHujbdHGPRL20llTNMzLeHND/zX2dwcK9vDUyAA==")
 }

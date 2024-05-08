@@ -34,9 +34,10 @@ require (
 	github.com/tklauser/numcpus v0.6.1 // indirect
 	github.com/tyler-smith/go-bip39 v1.1.0 // indirect
 	golang.org/x/crypto v0.22.0 // indirect
+	golang.org/x/mobile v0.0.0-20240506190922-a1a533f289d3 // indirect
 	golang.org/x/mod v0.17.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect
-	golang.org/x/sys v0.19.0 // indirect
-	golang.org/x/tools v0.20.0 // indirect
+	golang.org/x/sys v0.20.0 // indirect
+	golang.org/x/tools v0.21.0 // indirect
 	rsc.io/tmplfunc v0.0.3 // indirect
 )
