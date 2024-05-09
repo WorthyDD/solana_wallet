@@ -16,6 +16,7 @@ import (
 	"github.com/tyler-smith/go-bip39"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 func hello() {
@@ -100,21 +101,22 @@ func newWalletV2(seed ed25519.PublicKey) {
 	fmt.Println("Private Key:", wallet.PrivateKey)
 }
 
-func fetchBalance(address string) {
+func fetchBalance(address string, needAirdrop bool) {
 	c := client.NewClient(rpc.DevnetRPCEndpoint)
 
 	// request for 1 SOL airdrop using RequestAirdrop()
-	//txhash, err := c.RequestAirdrop(
-	//	context.TODO(), // request context
-	//	address,        // wallet address requesting airdrop
-	//	1e9,            // amount of SOL in lamport
-	//)
-	//
-	//// check for errors
-	//if err != nil {
-	//	panic(err)
-	//}
-	//fmt.Printf("txhash: %s\n", txhash)
+	if needAirdrop {
+		txhash, err := c.RequestAirdrop(
+			context.TODO(), // request context
+			address,        // wallet address requesting airdrop
+			2e9,            // amount of SOL in lamport
+		)
+		// check for errors
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf("txhash: %s\n", txhash)
+	}
 
 	// get balance
 	balance, err := c.GetBalance(
@@ -150,16 +152,27 @@ func fetchBalance(address string) {
 	fmt.Printf("response: %+v\n", res)
 }
 
-func createWallet() {
+func createWallet(keys []string) {
 	// 三个公钥的 Base64 编码
-	pubKey1Base64 := "aF/oGR6sBIuSVZ0WPX/vvX6sLsKgJAe1gKtRdjiSoE4="
-	pubKey2Base64 := "yOVFdpDkkLV0cCyGDJBP8BaJe29IFq2LbMS9khi8U20="
-	pubKey3Base64 := "DmFuLCXL4EYae+9aZ93TiyebtdGW8mFWGmjIDM967Qs="
-	keys := []string{pubKey1Base64, pubKey2Base64, pubKey3Base64}
+	//pubKey1Base64 := "aF/oGR6sBIuSVZ0WPX/vvX6sLsKgJAe1gKtRdjiSoE4="
+	//pubKey2Base64 := "yOVFdpDkkLV0cCyGDJBP8BaJe29IFq2LbMS9khi8U20="
+	//pubKey3Base64 := "DmFuLCXL4EYae+9aZ93TiyebtdGW8mFWGmjIDM967Qs="
+	//keys := []string{pubKey1Base64, pubKey2Base64, pubKey3Base64}
 
-	pubkey := combinePublicKey(keys)
+	//pubkey := combinePublicKey(keys)
 
-	pk := ed25519.PublicKey(pubkey)
+	// 解码 Base64 编码的公钥
+	// 将两个密钥合并
+	combinedKey := strings.Join(keys, "")
+
+	// 使用SHA-256散列算法生成32位种子
+	hasher := sha256.New()
+	hasher.Write([]byte(combinedKey))
+	seed := hasher.Sum(nil)
+
+	fmt.Printf("seed: %x\n", seed)
+
+	pk := ed25519.PublicKey(seed)
 
 	fmt.Printf("pubkey: %v\n", pk)
 
@@ -322,5 +335,24 @@ func main() {
 	//add := ethWalletDemo("shock napkin banana sister giraffe memory hill father yellow spot rubber able")
 	//fetchEthBalance(add)
 
-	createWalletWithSeed("2CDMXcResydfmiDvhonRMrDLLkUkYtuY96L+sG9mJht7i5wZHujbdHGPRL20llTNMzLeHND/zX2dwcK9vDUyAA==")
+	//createWalletWithSeed("2CDMXcResydfmiDvhonRMrDLLkUkYtuY96L+sG9mJht7i5wZHujbdHGPRL20llTNMzLeHND/zX2dwcK9vDUyAA==")
+
+	//keys1 := []string{
+	//	"ewogIlNlY3JldHMiOiB7CiAgIjEiOiB7CiAgICJpZCI6IDEsCiAgICJzZWNyZXQiOiAid1lLMHNqQUVmcmNlWU1yaUh1NmNtUnkzQzFrY1ZHMTIrR1pXVGg5STd3WT0iCiAgfQogfSwKICJTaGFyZXMiOiB7CiAgInQiOiAxLAogICJncm91cGtleSI6ICJhTTB4K1A3d1Z0aDVLTTlmczZXTGppa1dZblpRcDhtQ0pZb1V6elcvTlVvPSIsCiAgInNoYXJlcyI6IHsKICAgIjEiOiAieWxib2haaTV5N3NkblRyanBLYnlxeXNFd3JPRnZ6UUFCTTdJKzRkZlRqMD0iCiAgfQogfQp9",
+	//	"ewogIlNlY3JldHMiOiB7CiAgIjIiOiB7CiAgICJpZCI6IDIsCiAgICJzZWNyZXQiOiAiL0gyVmM4QS9jVS9pREd5OEduenhkcDE2aS90NlVmYzdXUTV3L2VPdHZnVT0iCiAgfQogfSwKICJTaGFyZXMiOiB7CiAgInQiOiAxLAogICJncm91cGtleSI6ICJhTTB4K1A3d1Z0aDVLTTlmczZXTGppa1dZblpRcDhtQ0pZb1V6elcvTlVvPSIsCiAgInNoYXJlcyI6IHsKICAgIjIiOiAiYk1zWDM3Wks5OWtYdFYyMmZ4MkZ3ZjYzMUlpMkY5eUY5K3FKKzA5MVZBaz0iCiAgfQogfQp9",
+	//}
+	//createWallet(keys1)
+	//address1 := "4xJ3bqT3zsAqBngPoCwtYhJiZ6Ax9riBCdTHKjUUZ5gr"
+	//
+	//fetchBalance(address1, false)
+
+	//keys2 := []string{
+	//	"ewogIlNlY3JldHMiOiB7CiAgIjEiOiB7CiAgICJpZCI6IDEsCiAgICJzZWNyZXQiOiAiQllUaGh6aVk4UEJTTE8wMTA4MGVWRG9ySkc5bDJpd0FMMVh4ZXkrcmJRcz0iCiAgfQogfSwKICJTaGFyZXMiOiB7CiAgInQiOiAxLAogICJncm91cGtleSI6ICJuQlVxK041THlIaWxjdVlmZU9oVkhERFlaZWtOTXNNYXRUdm9IdUtlbFVnPSIsCiAgInNoYXJlcyI6IHsKICAgIjEiOiAiRnVUSVdUQTlJZGVNNDRiaTVtNWM0YjI2cDU2K0trQnhoY1h6MENMVzdWWT0iCiAgfQogfQp9",
+	//	"ewogIlNlY3JldHMiOiB7CiAgIjIiOiB7CiAgICJpZCI6IDIsCiAgICJzZWNyZXQiOiAieUNhZEJ0TnFOZk03STVqcy9kWTcxZEk1VVpzNTV2dE9zWFNQN1pZQTlnST0iCiAgfQogfSwKICJTaGFyZXMiOiB7CiAgInQiOiAxLAogICJncm91cGtleSI6ICJuQlVxK041THlIaWxjdVlmZU9oVkhERFlaZWtOTXNNYXRUdm9IdUtlbFVnPSIsCiAgInNoYXJlcyI6IHsKICAgIjIiOiAiN0pkeXpEUXZkTEFtRUhlUk90K2pXdStVQkI3M2dQT0hnVmsxQmFWNU9VWT0iCiAgfQogfQp9",
+	//}
+	//createWallet(keys2)
+	//address2 := "2vvzNTow58DMDZhxyp5SNTxfGXAdHehXY8nyFuRHFy4W"
+	//
+	//fetchBalance(address2, false)
+
 }
